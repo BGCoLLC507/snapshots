@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Readiness Snapshot — Black Girl Co.</title>
+<meta name="description" content="Fifteen questions across the five things that decide whether AI creates advantage — or quiet risk.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ds.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="eyebrow">Black Girl Co. · AI Advisory</div>
+    <h1>How AI-Ready Is Your Organization?</h1>
+    <p class="sub">Fifteen questions across the five things that decide whether AI creates advantage — or
+      quiet risk. Answer honestly; this is a mirror, not a test.</p>
+    <div class="meta">~5 minutes · 15 questions · self-scored<br>
+      <span class="plain">Your individual answers are not stored — only your score, and the details you
+      choose to share.</span></div>
+  </div>
+
+  <div class="body">
+    <form id="scorecard"></form>
+    <div class="actions">
+      <button type="button" class="btn" id="calc">See my result</button>
+      <span class="warn" id="warn" style="display:none;"></span>
+    </div>
+  </div>
+
+  <div class="result" id="result" aria-live="polite">
+    <div class="r-top">
+      <div class="r-score"><span id="scoreNum">0</span><small>/60</small></div>
+      <div class="r-tier"><div class="lbl">Your readiness tier</div><div class="name" id="tierName">—</div></div>
+    </div>
+    <div id="skipChip"></div>
+    <p class="r-take" id="takeaway"></p>
+
+    <div class="bars" id="bars"></div>
+
+    <div class="cta">
+      <p class="line" id="bandCta"></p>
+      <a class="btn block" id="bookBtn" href="#" target="_blank" rel="noopener">Book a 45-minute scoping call</a>
+      <p class="next">Prefer to send your details first? <a id="formLink" href="#" target="_blank" rel="noopener">Share
+        your snapshot result</a> and Lisa will bring it to the call.</p>
+    </div>
+
+    <p class="disc">This snapshot is self-reported and not evidence-verified — treat it as a starting
+      conversation, not a formal rating. The full AI Opportunity Assessment scores your organization against
+      documented evidence and interviews.</p>
+  </div>
+
+  <div class="foot">
+    <span class="name">Lisa Jones, MBCP, MBCI</span> · ISO 22301 Lead Auditor · DRI International 2025
+    Consultant of the Year<br>
+    <a href="mailto:connect@blackgirlcollc.com">connect@blackgirlcollc.com</a>
+    <div class="nav"><a href="index.html">Snapshots</a><a href="resilience.html">Resilience Maturity</a><a href="privacy.html">Privacy</a></div>
+  </div>
+</div>
+
+<script src="assets/consent.js" defer></script>
+<script>
+/* ---- Funnel endpoints (Lisa-supplied) ------------------------------------ */
+const CAL_URL  = 'https://cal.com/lisa.jonesblackgirlcollc/assessment-scoping-call';
+const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSc2vah3yPX5OFQkiL6QQjMBmOdytPDzS4vTrCs97NEQxcaC3Q/viewform?usp=pp_url&entry.995132048=SCOREHERE&entry.1354982172=BANDHERE&entry.1338497546=SNAPSHOTHERE'; /* pre-filled link: SCOREHERE / BANDHERE / SNAPSHOTHERE are replaced at runtime */
+const SNAPSHOT_NAME = 'AI Readiness Snapshot';
+const MIN_ANSWERED = 8;  /* of 15 */
+const MAX_PER_Q = 4;
+const SCALE_TO = 60;     /* presented denominator; bands assume /60 */
+
+const DEFAULT = ['Not yet','Beginning','Developing','Established'];
+const DIMS = [
+  { key:'Data', name:'Data', qs:[
+    { t:'Our key operational data is centralized and accessible — not scattered across inboxes and spreadsheets.',
+      opts:['Scattered','Somewhat','Mostly centralized','Fully centralized'] },
+    { t:'The data we would feed an AI tool is reasonably accurate and current.',
+      opts:['Rarely','Sometimes','Usually','Consistently'] },
+    { t:'We can pull the data we need without a major manual effort.',
+      opts:['Major effort','Some effort','Minor effort','Easily'] } ]},
+  { key:'Tools', name:'Tools & Infrastructure', qs:[
+    { t:'Our teams already use modern cloud/software tools day to day.',
+      opts:['Rarely','Some teams','Most teams','Company-wide'] },
+    { t:'We can adopt or integrate a new tool without a months-long process.',
+      opts:['Months+','Several weeks','A week or two','Days'] },
+    { t:'We have (or can access) the technical support to set new tools up safely.',
+      opts:['None','Limited','Adequate','Strong'] } ]},
+  { key:'Skills', name:'Skills & Literacy', qs:[
+    { t:'Our people have used AI tools (e.g., ChatGPT/Copilot) for real work.',
+      opts:['No one','A few','Many','Most'] },
+    { t:'Staff can tell where AI is genuinely helpful vs. where it is risky.',
+      opts:['Not really','Somewhat','Mostly','Confidently'] },
+    { t:'We have someone who can champion and guide AI adoption internally.',
+      opts:['No one','Informally','Part-time champion','Dedicated lead'] } ]},
+  { key:'Governance', name:'Governance & Policy', qs:[
+    { t:'We have a clear policy for acceptable AI use.',
+      opts:['None','In progress','Informal','Formal & shared'] },
+    { t:'We have defined where a human must review or approve AI output.',
+      opts:['Not defined','Ad hoc','Partly','Clearly defined'] },
+    { t:'We understand our regulatory and data-compliance obligations around AI.',
+      opts:['Unclear','Partly','Mostly','Clearly'] } ]},
+  { key:'Culture', name:'Culture & Change-Appetite', qs:[
+    { t:'Leadership actively supports exploring AI.',
+      opts:['Not really','Somewhat','Mostly','Strongly'] },
+    { t:'Our teams are open to changing how they work.',
+      opts:['Resistant','Cautious','Open','Eager'] },
+    { t:'We have successfully rolled out new ways of working before.',
+      opts:['Rarely','Sometimes','Usually','Consistently'] } ]}
+];
+
+/* Band thresholds 0 / 27 / 39 / 51 on the /60 scale. Interpretation text is the
+   source-of-truth wording from the original scorecard; CTA lines per spec. */
+const TIERS = [
+  { min:51, name:'Leading',   take:"You are ahead of most organizations. The frontier for you is resilience: making sure your AI-dependent processes don't quietly become single points of failure. The next move is hardening what you have, not just adding more.",
+    cta:"At this level the question shifts from readiness to exposure: where AI has become the only way something gets done, and what happens when it is wrong." },
+  { min:39, name:'Scaling',   take:"You have real momentum. The risk now isn't moving too slowly — it's scaling AI faster than your governance and oversight can keep up. Sequence and guardrails are what protect the gains.",
+    cta:"Momentum is easy to measure. Whether your guardrails are keeping pace with it is not." },
+  { min:27, name:'Building',  take:"Your foundations are forming and several opportunities are within reach. The priority is choosing the right first moves and putting guardrails around them before you scale.",
+    cta:"The pieces are coming together unevenly, and a score cannot tell you which gap is actually blocking the others." },
+  { min:0,  name:'Exploring', take:"You're at the starting line — and being deliberate here pays off. Focus first on data and literacy foundations before chasing use cases, so what you build later actually holds.",
+    cta:"Readiness tells you how far you are from adopting AI; it does not tell you where AI would be worth adopting first." }
+];
+
+/* ---- Build the form ------------------------------------------------------ */
+const form = document.getElementById('scorecard');
+let qi = 0;
+DIMS.forEach((d, di) => {
+  const sec = document.createElement('div'); sec.className = 'dim';
+  sec.innerHTML = `<div class="dim-h row"><span class="n">${String(di+1).padStart(2,'0')}</span><h2>${d.name}</h2></div>`;
+  d.qs.forEach(q => {
+    qi++;
+    const name = 'q' + qi;
+    const labels = q.opts || DEFAULT;
+    const scale = labels.map((l,i) => [l, i+1]).concat([['Unsure', 0]]);
+    const opts = scale.map(([lbl,val]) =>
+      `<label class="${val===0?'unsure':''}"><input type="radio" name="${name}" value="${val}" data-dim="${d.key}"><span>${lbl}</span></label>`).join('');
+    const box = document.createElement('div'); box.className = 'q';
+    box.innerHTML = `<p class="q-t">${q.t}</p><div class="opts grid">${opts}</div>`;
+    sec.appendChild(box);
+  });
+  form.appendChild(sec);
+});
+const TOTAL_Q = qi;
+
+/* snapshot_started — first question answered, once */
+let started = false;
+form.addEventListener('change', () => {
+  if (started) return;
+  started = true;
+  window.bgcTrack && window.bgcTrack('snapshot_started', { snapshot: SNAPSHOT_NAME });
+});
+
+/* ---- Score --------------------------------------------------------------- */
+document.getElementById('calc').addEventListener('click', () => {
+  const warn = document.getElementById('warn');
+  const picked = form.querySelectorAll('input[type=radio]:checked');
+
+  if (picked.length < TOTAL_Q) {
+    warn.textContent = 'Please answer every question to see your score.';
+    warn.style.display = 'inline'; return;
+  }
+
+  /* Unsure (0) is EXCLUDED from the score, not counted as zero. Because the
+     bands assume a /60 scale, the answered questions are scaled back up to /60
+     so the thresholds stay valid however many were skipped. */
+  let sum = 0, answeredCount = 0;
+  const dim = {}; DIMS.forEach(d => dim[d.key] = { sum:0, answered:0 });
+
+  picked.forEach(i => {
+    const v = +i.value, k = i.dataset.dim;
+    if (v > 0) { sum += v; answeredCount++; dim[k].sum += v; dim[k].answered++; }
+  });
+  const skipped = TOTAL_Q - answeredCount;
+
+  if (answeredCount < MIN_ANSWERED) {
+    warn.textContent = `Only ${answeredCount} of ${TOTAL_Q} answered — that isn't enough to produce a meaningful score. Try answering at least ${MIN_ANSWERED}.`;
+    warn.style.display = 'inline'; return;
+  }
+  warn.style.display = 'none';
+
+  const scaled = Math.round((sum / (MAX_PER_Q * answeredCount)) * SCALE_TO);
+  const tier = TIERS.find(t => scaled >= t.min);
+
+  document.getElementById('scoreNum').textContent = scaled;
+  document.getElementById('tierName').textContent = tier.name;
+  document.getElementById('takeaway').textContent = tier.take;
+  document.getElementById('bandCta').textContent  = tier.cta;
+  document.getElementById('skipChip').innerHTML =
+    skipped ? `<span class="chip">${skipped} of ${TOTAL_Q} unsure — not counted; score scaled to /60</span>` : '';
+
+  const bars = document.getElementById('bars'); bars.innerHTML = '';
+  DIMS.forEach(d => {
+    const { sum:s, answered:a } = dim[d.key];
+    const max = MAX_PER_Q * a;
+    const pct = a ? Math.round(s / max * 100) : 0;
+    const row = document.createElement('div'); row.className = 'bar';
+    row.innerHTML = `<span>${d.name}</span><div class="track">` +
+      `<div class="fill${a?'':' none'}" style="width:${pct}%"></div></div>` +
+      `<span class="v">${a ? s + '/' + max : 'Unsure'}</span>`;
+    bars.appendChild(row);
+  });
+
+  /* Pass score + band + snapshot into the pre-filled Google Form */
+  const formUrl = FORM_URL
+    .replace('SCOREHERE',    encodeURIComponent(scaled))
+    .replace('BANDHERE',     encodeURIComponent(tier.name))
+    .replace('SNAPSHOTHERE', encodeURIComponent(SNAPSHOT_NAME));
+  document.getElementById('formLink').href = formUrl;
+  document.getElementById('bookBtn').href  = CAL_URL;
+
+  window.bgcTrack && window.bgcTrack('snapshot_completed',
+    { snapshot: SNAPSHOT_NAME, score: scaled, band: tier.name, unsure_count: skipped });
+
+  const res = document.getElementById('result');
+  res.classList.add('show');
+  res.scrollIntoView({ behavior:'smooth', block:'start' });
+});
+
+document.getElementById('bookBtn').addEventListener('click', () => {
+  window.bgcTrack && window.bgcTrack('cta_clicked',
+    { snapshot: SNAPSHOT_NAME, band: document.getElementById('tierName').textContent });
+});
+</script>
+</body>
+</html>

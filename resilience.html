@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resilience Maturity Snapshot — Black Girl Co.</title>
+<meta name="description" content="A seven-question self-check across the areas that determine how strong your continuity program really is.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ds.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="eyebrow">Black Girl Co. · Resilience Advisory</div>
+    <h1>Resilience Maturity Snapshot</h1>
+    <p class="sub">Seven questions across the areas that determine how strong your continuity program really
+      is. This is a quick self-check, not a substitute for an evidence-based assessment — but it will show
+      you where to look first.</p>
+    <div class="meta">~5 minutes · 7 questions · self-scored<br>
+      <span class="plain">Your individual answers are not stored — only your score, and the details you
+      choose to share. Read all five descriptions per question and pick the one that best matches your
+      organization today.</span></div>
+  </div>
+
+  <div class="body">
+    <form id="scorecard"></form>
+
+    <div class="actions">
+      <button type="button" class="btn" id="calc">See my snapshot</button>
+      <span class="warn" id="warn" style="display:none;"></span>
+    </div>
+  </div>
+
+  <div class="result" id="result" aria-live="polite">
+    <div class="r-top">
+      <div class="r-score"><span id="scoreNum">0.0</span><small>/5.0 average</small></div>
+      <div class="r-tier"><div class="lbl">Your program reads as</div><div class="name" id="tierName">—</div></div>
+    </div>
+    <div id="skipChip"></div>
+    <p class="r-take" id="takeaway"></p>
+
+    <div class="bars" id="bars"></div>
+    <div class="legend"><span class="dash"></span> <span>a common baseline for a defensible program
+      (Level 3 — Defined), per Lisa's professional judgment as an ISO 22301 Lead Auditor</span></div>
+
+    <div class="spof">
+      <b>What we always check in the full assessment</b>
+      <p>Every engagement looks for single points of failure — a person, vendor, system, or site your
+        critical operations depend on with no real fallback. That can't be self-scored honestly; it takes
+        evidence and a trained eye. It's the differentiator of the full Resilience Maturity Assessment.</p>
+    </div>
+
+    <div class="cta">
+      <p class="line" id="bandCta"></p>
+      <a class="btn block" id="bookBtn" href="#" target="_blank" rel="noopener">Book a 45-minute scoping call</a>
+      <p class="next">Prefer to send your details first? <a id="formLink" href="#" target="_blank" rel="noopener">Share
+        your snapshot result</a> and Lisa will bring it to the call.</p>
+    </div>
+
+    <p class="disc">This snapshot is self-reported and not evidence-verified — treat it as a starting
+      conversation, not a formal rating. The full assessment scores your program against documented
+      evidence and interviews, with every finding traceable to what was reviewed.</p>
+  </div>
+
+  <div class="foot">
+    <span class="name">Lisa Jones, MBCP, MBCI</span> · ISO 22301 Lead Auditor · DRI International 2025
+    Consultant of the Year<br>
+    <a href="mailto:connect@blackgirlcollc.com">connect@blackgirlcollc.com</a>
+    <div class="nav"><a href="index.html">Snapshots</a><a href="ai.html">AI Readiness</a><a href="privacy.html">Privacy</a></div>
+  </div>
+</div>
+
+<script src="assets/consent.js" defer></script>
+<script>
+/* ---- Funnel endpoints (Lisa-supplied) ------------------------------------ */
+const CAL_URL  = 'https://cal.com/lisa.jonesblackgirlcollc/assessment-scoping-call';
+const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSc2vah3yPX5OFQkiL6QQjMBmOdytPDzS4vTrCs97NEQxcaC3Q/viewform?usp=pp_url&entry.995132048=SCOREHERE&entry.1354982172=BANDHERE&entry.1338497546=SNAPSHOTHERE'; /* pre-filled link: SCOREHERE / BANDHERE / SNAPSHOTHERE are replaced at runtime */
+const SNAPSHOT_NAME = 'Resilience Maturity Snapshot';
+const MIN_ANSWERED = 4; /* of 7 — below this there isn't enough to score */
+
+const LEVELS = ['Ad-hoc','Repeatable','Defined','Managed','Embedded'];
+
+const DOMAINS = [
+  { key:'D1', name:'Program Leadership & Governance',
+    q:"How would you describe leadership's ownership of your continuity program?",
+    opts:[
+      "No real owner; no approved policy or budget; attention appears only after something goes wrong.",
+      "Someone's responsible and a basic policy may exist, but support depends on individuals and nothing is reviewed on a schedule.",
+      "Leadership has formally committed — an approved policy, assigned roles, a defined scope, and a regular review cycle.",
+      "The program has objectives and measures; leadership reviews performance regularly and tracks findings to closure.",
+      "Continuity is part of how the organization runs; leadership uses program results in business decisions." ]},
+  { key:'D2', name:'Risk & Threat Understanding',
+    q:'How well do you understand what could disrupt your operations?',
+    opts:[
+      "No structured look at threats; they come up anecdotally, usually after a near miss.",
+      "Some risks identified, often for one area or after an incident, but the picture is incomplete and not kept current.",
+      "A documented method identifies and evaluates risks across the organization on a schedule.",
+      "Risks are actively monitored and re-evaluated as the business changes; treatments are tracked to completion.",
+      "Risk understanding is continuous and forward-looking, using live indicators to drive investment decisions." ]},
+  { key:'D3', name:'Supply Chain & Third-Party Resilience',
+    q:'How well do you understand your dependence on key vendors and suppliers?',
+    opts:[
+      "No clear picture of which suppliers we truly depend on.",
+      "Some critical vendors known informally; aware a few are single-source, but no real look at alternatives.",
+      "A documented list of critical vendors exists, including single-/sole-source status and alternatives.",
+      "Critical vendors are ranked and monitored; backup vendors or workarounds are pre-arranged for the most critical.",
+      "Continuous live visibility into vendor risk; alternates are proven through exercises." ]},
+  { key:'D4', name:'Business Priorities & Impact',
+    q:"How confident are you in your organization's recovery priorities?",
+    opts:[
+      "Priorities are guesswork; no one has formally decided what matters most.",
+      "Some prioritizing was done once, often after an incident, but it's inconsistent and not really used.",
+      "A consistent method ranks operations by impact and sets recovery timeframes, approved by the people who own them.",
+      "Priorities are checked against what can actually be recovered, and kept current as the business changes.",
+      "Priorities are always current, tied to live business data, and drive investment decisions at the top." ]},
+  { key:'D5', name:'Recovery Strategies & Solutions',
+    q:'If a key system, site, or team became unavailable tomorrow, how ready are you to recover?',
+    opts:[
+      "No thought-through way to keep critical work running; the plan is to figure it out in the moment.",
+      "Some arrangements exist (backups, an alternate idea) but chosen piecemeal — may not match real recovery needs.",
+      "Recovery options were chosen based on documented priorities and cover personnel, facilities, technology, data, and suppliers.",
+      "Recovery capability is verified against actual need; gaps are known, tracked, and being closed.",
+      "Resilience is a design input for anything new; strategies are continuously re-evaluated." ]},
+  { key:'D6', name:'Response & Crisis Communication',
+    q:'How prepared is your organization to respond to and communicate through a disruption?',
+    opts:[
+      "No documented response plans; response would be improvised, including who speaks for the organization.",
+      "Plans exist but are incomplete or outdated; roles aren't clearly assigned; communication would be improvised.",
+      "A documented structure exists — activation criteria, defined roles, current plans, prepared communication templates.",
+      "Response is reviewed and refined after every exercise or event; leadership roles are rehearsed, not just written.",
+      "Response is a confident, integrated capability; teams adapt smoothly and every activation improves the program." ]},
+  { key:'D7', name:'People Readiness & Testing',
+    q:'How ready and tested are your people on their continuity roles?',
+    opts:[
+      "Staff are unaware of their roles; no testing has taken place; plans have never been validated.",
+      "Awareness activity is inconsistent with no regular schedule; knowledge sits with a few individuals.",
+      "A regular program exists — staff trained, plans and teams exercised on a defined cycle, findings assigned to owners.",
+      "Testing is managed and progressive; exercises vary and increase in challenge; new hires are covered automatically.",
+      "Readiness is embedded in the culture; exercises are routine and results consistently show improvement." ]}
+];
+
+/* Band thresholds 0 / 1.5 / 2.5 / 3.5 / 4.5. Interpretation text is the
+   source-of-truth wording from the original scorecard; CTA lines per spec. */
+const TIERS = [
+  { min:4.5, name:'Embedded', take:"Your program reads as strong and mature — the differentiator now is proving it: continuous validation, evidence trails, and using program results to drive real business decisions.",
+    cta:"A strong self-score is worth verifying. The findings that matter at this level are the ones an organization can no longer see in itself." },
+  { min:3.5, name:'Managed', take:"Your program is solid and largely defined. The next step is tightening measurement and closing the gaps that stand between a good program and a continuously managed one.",
+    cta:"At this level the risk is rarely the program; it is the single person, vendor, or system the program quietly depends on." },
+  { min:2.5, name:'Defined', take:"Your program has real building blocks, but consistency is the gap — several areas depend on individuals rather than a documented, repeatable method.",
+    cta:"Documented and working are different things, and a self-score cannot tell the difference. That is what evidence is for." },
+  { min:1.5, name:'Repeatable', take:"Your program has pieces in place but isn't yet consistent or documented across the board — this is exactly the stage where a structured assessment finds the highest-value fixes.",
+    cta:"Consistency is the gap here, and the cause is usually something specific — a step that only works when one person does it." },
+  { min:0,   name:'Ad-hoc', take:"Your program is at an early stage across most areas. That's a completely normal starting point — the value now is in sequencing what to build first.",
+    cta:"A snapshot can tell you the foundations are not yet in place; it cannot tell you which one to build first, or what is already exposed while you decide." }
+];
+
+/* ---- Build the form ------------------------------------------------------ */
+const form = document.getElementById('scorecard');
+DOMAINS.forEach((d, di) => {
+  const sec = document.createElement('div'); sec.className = 'dim';
+  sec.innerHTML = `<div class="dim-h"><span class="n">DOMAIN ${di+1} OF 7</span><h2>${d.name}</h2><p class="q">${d.q}</p></div>`;
+  const name = 'q' + d.key;
+  const scale = LEVELS.map((l,i) => [l, i+1]).concat([['Unsure', 0]]);
+  const opts = scale.map(([lbl,val],i) => {
+    const desc = i < 5 ? d.opts[i] : "Not sure enough to answer confidently — that's useful to know too.";
+    return `<label class="${val===0?'unsure':''}"><input type="radio" name="${name}" value="${val}"><span class="txt"><b>${lbl}.</b> ${desc}</span></label>`;
+  }).join('');
+  const box = document.createElement('div'); box.className = 'opts'; box.innerHTML = opts;
+  sec.appendChild(box);
+  form.appendChild(sec);
+});
+
+/* snapshot_started — first question answered, once */
+let started = false;
+form.addEventListener('change', () => {
+  if (started) return;
+  started = true;
+  window.bgcTrack && window.bgcTrack('snapshot_started', { snapshot: SNAPSHOT_NAME });
+});
+
+/* ---- Score --------------------------------------------------------------- */
+document.getElementById('calc').addEventListener('click', () => {
+  const warn = document.getElementById('warn');
+  const picked = DOMAINS.map(d => form.querySelector(`input[name=q${d.key}]:checked`));
+
+  if (picked.some(p => !p)) {
+    warn.textContent = 'Please answer every question to see your result.';
+    warn.style.display = 'inline'; return;
+  }
+
+  const values  = picked.map(p => +p.value);
+  const scored  = values.filter(v => v > 0);   /* Unsure (0) is EXCLUDED, not zero-scored */
+  const skipped = values.length - scored.length;
+
+  if (scored.length < MIN_ANSWERED) {
+    warn.textContent = `Only ${scored.length} of 7 answered — that isn't enough to produce a meaningful snapshot. Try answering at least ${MIN_ANSWERED}.`;
+    warn.style.display = 'inline'; return;
+  }
+  warn.style.display = 'none';
+
+  const avg  = scored.reduce((a,b) => a+b, 0) / scored.length;
+  const tier = TIERS.find(t => avg >= t.min);
+
+  document.getElementById('scoreNum').textContent = avg.toFixed(1);
+  document.getElementById('tierName').textContent = tier.name;
+  document.getElementById('takeaway').textContent = tier.take;
+  document.getElementById('bandCta').textContent  = tier.cta;
+  document.getElementById('skipChip').innerHTML =
+    skipped ? `<span class="chip">${skipped} of 7 unsure — not counted</span>` : '';
+
+  const bars = document.getElementById('bars'); bars.innerHTML = '';
+  DOMAINS.forEach((d, i) => {
+    const v = values[i], pct = v > 0 ? (v/5*100) : 0;
+    const row = document.createElement('div'); row.className = 'bar';
+    row.innerHTML = `<span>${d.name}</span><div class="track">` +
+      `<div class="fill${v===0?' none':''}" style="width:${pct}%"></div>` +
+      `<div class="target" style="left:60%"></div></div>` +
+      `<span class="v">${v===0 ? 'Unsure' : LEVELS[v-1]}</span>`;
+    bars.appendChild(row);
+  });
+
+  /* Pass score + band + snapshot into the pre-filled Google Form */
+  const formUrl = FORM_URL
+    .replace('SCOREHERE',    encodeURIComponent(avg.toFixed(1)))
+    .replace('BANDHERE',     encodeURIComponent(tier.name))
+    .replace('SNAPSHOTHERE', encodeURIComponent(SNAPSHOT_NAME));
+  document.getElementById('formLink').href = formUrl;
+  document.getElementById('bookBtn').href  = CAL_URL;
+
+  window.bgcTrack && window.bgcTrack('snapshot_completed',
+    { snapshot: SNAPSHOT_NAME, score: avg.toFixed(1), band: tier.name, unsure_count: skipped });
+
+  const res = document.getElementById('result');
+  res.classList.add('show');
+  res.scrollIntoView({ behavior:'smooth', block:'start' });
+});
+
+document.getElementById('bookBtn').addEventListener('click', () => {
+  window.bgcTrack && window.bgcTrack('cta_clicked',
+    { snapshot: SNAPSHOT_NAME, band: document.getElementById('tierName').textContent });
+});
+</script>
+</body>
+</html>
