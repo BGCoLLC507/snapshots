@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Snapshot — Black Girl Co.</title>
-<meta name="description" content="Fifteen questions across the five things that decide whether AI creates advantage — or quiet risk.">
+<title>AI Snapshot | Black Girl Co.</title>
+<meta name="description" content="Fifteen questions across the five things that decide whether AI creates advantage or quiet risk.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -15,10 +15,10 @@
   <div class="head">
     <div class="eyebrow">Black Girl Co. · AI Advisory</div>
     <h1>AI Snapshot</h1>
-    <p class="sub">Fifteen questions across the five things that decide whether AI creates advantage — or
+    <p class="sub">Fifteen questions across the five things that decide whether AI creates advantage or
       quiet risk. Answer honestly; this is a mirror, not a test.</p>
     <div class="meta">~5 minutes · 15 questions · self-scored<br>
-      <span class="plain">Your individual answers are not stored — only your score, and the details you
+      <span class="plain">Your individual answers are not stored, only your score, and the details you
       choose to share.</span></div>
   </div>
 
@@ -33,7 +33,7 @@
   <div class="result" id="result" aria-live="polite">
     <div class="r-top">
       <div class="r-score"><span id="scoreNum">0</span><small>/60</small></div>
-      <div class="r-tier"><div class="lbl">Your readiness tier</div><div class="name" id="tierName">—</div></div>
+      <div class="r-tier"><div class="lbl">Your readiness tier</div><div class="name" id="tierName">…</div></div>
     </div>
     <div id="skipChip"></div>
     <p class="r-take" id="takeaway"></p>
@@ -47,7 +47,7 @@
           <div class="num">1</div>
           <div>
             <p class="lbl">Send your result to Lisa</p>
-            <p class="hint">Takes about 30 seconds. Your score and band are already filled in — you just add
+            <p class="hint">Takes about 30 seconds. Your score and band are already filled in. You just add
               your name, work email, and organization.</p>
             <a class="btn secondary block" id="formLink" href="#" target="_blank" rel="noopener">Share my snapshot result</a>
           </div>
@@ -64,7 +64,7 @@
       </div>
     </div>
 
-    <p class="disc">This snapshot is self-reported and not evidence-verified — treat it as a starting
+    <p class="disc">This snapshot is self-reported and not evidence-verified. Treat it as a starting
       conversation, not a formal rating. The full AI Opportunity Assessment scores your organization against
       documented evidence and interviews.</p>
   </div>
@@ -90,7 +90,7 @@ const SCALE_TO = 60;     /* presented denominator; bands assume /60 */
 const DEFAULT = ['Not yet','Beginning','Developing','Established'];
 const DIMS = [
   { key:'Data', name:'Data', qs:[
-    { t:'Our key operational data is centralized and accessible — not scattered across inboxes and spreadsheets.',
+    { t:'Our key operational data is centralized and accessible, not scattered across inboxes and spreadsheets.',
       opts:['Scattered','Somewhat','Mostly centralized','Fully centralized'] },
     { t:'The data we would feed an AI tool is reasonably accurate and current.',
       opts:['Rarely','Sometimes','Usually','Consistently'] },
@@ -131,11 +131,11 @@ const DIMS = [
 const TIERS = [
   { min:51, name:'Leading',   take:"You are ahead of most organizations. The frontier for you is resilience: making sure your AI-dependent processes don't quietly become single points of failure. The next move is hardening what you have, not just adding more.",
     cta:"At this level the question shifts from readiness to exposure: where AI has become the only way something gets done, and what happens when it is wrong." },
-  { min:39, name:'Scaling',   take:"You have real momentum. The risk now isn't moving too slowly — it's scaling AI faster than your governance and oversight can keep up. Sequence and guardrails are what protect the gains.",
+  { min:39, name:'Scaling',   take:"You have real momentum. The risk now isn't moving too slowly; it's scaling AI faster than your governance and oversight can keep up. Sequence and guardrails are what protect the gains.",
     cta:"Momentum is easy to measure. Whether your guardrails are keeping pace with it is not." },
   { min:27, name:'Building',  take:"Your foundations are forming and several opportunities are within reach. The priority is choosing the right first moves and putting guardrails around them before you scale.",
     cta:"The pieces are coming together unevenly, and a score cannot tell you which gap is actually blocking the others." },
-  { min:0,  name:'Exploring', take:"You're at the starting line — and being deliberate here pays off. Focus first on data and literacy foundations before chasing use cases, so what you build later actually holds.",
+  { min:0,  name:'Exploring', take:"You're at the starting line, and being deliberate here pays off. Focus first on data and literacy foundations before chasing use cases, so what you build later actually holds.",
     cta:"Readiness tells you how far you are from adopting AI; it does not tell you where AI would be worth adopting first." }
 ];
 
@@ -160,7 +160,7 @@ DIMS.forEach((d, di) => {
 });
 const TOTAL_Q = qi;
 
-/* snapshot_started — first question answered, once */
+/* snapshot_started: first question answered, once */
 let started = false;
 form.addEventListener('change', () => {
   if (started) return;
@@ -191,7 +191,7 @@ document.getElementById('calc').addEventListener('click', () => {
   const skipped = TOTAL_Q - answeredCount;
 
   if (answeredCount < MIN_ANSWERED) {
-    warn.textContent = `Only ${answeredCount} of ${TOTAL_Q} answered — that isn't enough to produce a meaningful score. Try answering at least ${MIN_ANSWERED}.`;
+    warn.textContent = `Only ${answeredCount} of ${TOTAL_Q} answered. That isn't enough to produce a meaningful score. Try answering at least ${MIN_ANSWERED}.`;
     warn.style.display = 'inline'; return;
   }
   warn.style.display = 'none';
@@ -204,7 +204,7 @@ document.getElementById('calc').addEventListener('click', () => {
   document.getElementById('takeaway').textContent = tier.take;
   document.getElementById('bandCta').textContent  = tier.cta;
   document.getElementById('skipChip').innerHTML =
-    skipped ? `<span class="chip">${skipped} of ${TOTAL_Q} unsure — not counted; score scaled to /60</span>` : '';
+    skipped ? `<span class="chip">${skipped} of ${TOTAL_Q} unsure, not counted; score scaled to /60</span>` : '';
 
   const bars = document.getElementById('bars'); bars.innerHTML = '';
   DIMS.forEach(d => {
